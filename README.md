@@ -1,2 +1,3 @@
-# stm32-learning-code
-Some code when learning STM32
+# 学习 STM32 写的一些代码
+
+代码整理中。。
