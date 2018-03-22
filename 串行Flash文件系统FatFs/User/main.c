@@ -7,9 +7,10 @@ FATFS fsObject;
 FIL fp;
 
 #define TEST_FILENAME "FatFs文件系统读写测试文件.txt"
-const char writeBuf[] = "\r\nThis is a test text file.\
-  \r\n这是一个FatFs文件系统移植测试文件。\r\n";
-char readBuf[1024] = "";
+#define BUFF_SIZE 1024
+const char testText[] = "  This is a test text file.\
+  \r\n  这是一个FatFs文件系统移植测试文件。\r\n";
+char buff[BUFF_SIZE] = "";
 //BYTE work[FF_MAX_SS];
 
 UINT bw;  /* Number of bytes written */
@@ -48,13 +49,12 @@ int main(void)
     printf(" f_lseek res = %d\n", res);
   }
   if (res == FR_OK) {
-    res = f_write(&fp, writeBuf, sizeof(writeBuf), &bw);  /* 写入文件 */
-    printf(" f_write res = %d, bw = %d\n", res, bw);
-    printf(" Write data: %s", writeBuf);
-    f_printf(&fp, "%10lu KiB total drive space.\n%10lu KiB available.\n",
-           tot_sect / 2 * 8, fre_sect / 2 * 8);
-    printf("%10lu KiB total drive space.\n%10lu KiB available.\n",
-           tot_sect / 2 * 8, fre_sect / 2 * 8);
+//    res = f_write(&fp, testText, sizeof(testText), &bw);  /* 写入文件 */
+//    printf(" f_write res = %d, bw = %d\n", res, bw);
+    f_printf(&fp, "%s%6lu KiB total drive space.%6lu KiB available.\n",
+           testText, tot_sect / 2 * 8, fre_sect / 2 * 8);
+    printf("Write data: %s%6lu KiB total drive space.%6lu KiB available.\n",
+           testText, tot_sect / 2 * 8, fre_sect / 2 * 8);
   }
   if (res == FR_OK) {
     res = f_close(&fp);   /* 关闭文件 */
@@ -67,10 +67,12 @@ int main(void)
     printf(" second f_open res = %d\n", res);
   }
   if (res == FR_OK) {
-    res = f_read(&fp, readBuf, f_size(&fp), &br);   /* 读取文件 */
-    printf(" f_read res = %d, br = %d\n", res, br);
-    for (uint32_t i = 0; i < br; i++) {
-      putchar(readBuf[i]);
+    while(f_eof(&fp) == 0) {
+      res = f_read(&fp, buff, BUFF_SIZE, &br);   /* 读取文件 */
+      printf("\n>>> f_read res = %d, br = %d\n", res, br);
+      for (uint32_t i = 0; i < br; i++) {
+        putchar(buff[i]);
+      }
     }
   }
   if (res == FR_OK) {
@@ -82,10 +84,15 @@ int main(void)
   file_check("1:"TEST_FILENAME);
   
   if (res == FR_OK) {
-    strcpy(readBuf, "1:");
+    strcpy(buff, "1:");
     printf("\n---文件扫描测试---\n");
-    res = scan_files(readBuf);
+    res = scan_files(buff);
   }
+  
+//  if (res == FR_OK) {
+//    printf("\n---删除文件---\n");
+//    res = f_unlink("1:"TEST_FILENAME);
+//  }
   
   f_mount(NULL, "1:", 1);   /* 取消挂载文件系统 */
   
