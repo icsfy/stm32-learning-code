@@ -689,3 +689,75 @@ void LCD_DisplayStringLine_EN(uint16_t line, const char *pStr)
 {
   LCD_DisplayString_EN(0, line, pStr);
 }
+
+/* 在坐标(x, y)处显示一个中文字符 */
+void LCD_DisplayChar_CH(uint16_t x, uint16_t y, uint16_t ch)
+{
+  uint8_t rowCount, bitCount;
+  uint8_t buff[CH_CHAR_WIDTH * CH_CHAR_HEIGHT / 8];
+  uint16_t temp;
+  LCD_OpenWindow(x, y, CH_CHAR_WIDTH, CH_CHAR_HEIGHT);
+  LCD_Write_Cmd(CMD_SetPixel);
+  ch = (ch << 8) | (ch >> 8);
+  GetGBKCode(buff, ch);
+  for (rowCount = 0; rowCount < CH_CHAR_HEIGHT; rowCount++) {
+    temp = buff[rowCount * 2];
+    temp <<= 8;
+    temp |= buff[rowCount * 2 + 1];
+    for (bitCount = 0; bitCount < CH_CHAR_WIDTH; bitCount++) {
+      if (temp & (0x8000 >> bitCount))
+        LCD_Write_Data(LCD_FG_COLOR);
+      else
+        LCD_Write_Data(LCD_BG_COLOR);
+    }
+  }
+}
+
+/* 显示中文字符串, 超出屏幕自动换行 */
+void LCD_DisplayString_CH(uint8_t x, uint8_t y, const char *str)
+{
+  uint16_t ch;
+  while(*str != '\0') {
+    if ((x + CH_CHAR_WIDTH) > LCD_X_LENGTH) {
+      x = 0;
+      y += CH_CHAR_HEIGHT;
+    }
+    if ((y + CH_CHAR_HEIGHT) > LCD_Y_LENGTH) {
+      y = 0;
+    }
+    ch = *(uint16_t *)str;
+    LCD_DisplayChar_CH(x, y, ch);
+    str += 2;
+    x += CH_CHAR_WIDTH;
+  }
+}
+
+/* 显示中英文字符串 */
+void LCD_DisplayString(uint16_t x, uint16_t y, const char *str)
+{
+  while (*str != '\0') {
+    if (*str < 127) {   // 英文字符
+      if ((x + LCD_CurrentFonts->Width) > LCD_X_LENGTH) {
+        x = 0;
+        y += LCD_CurrentFonts->Height;
+      }
+      if ((y + LCD_CurrentFonts->Height) > LCD_Y_LENGTH) {
+        y = 0;
+      }
+      LCD_DisplayChar_EN(x, y, *str);
+      x += LCD_CurrentFonts->Width;
+      str++;
+    } else {    // 中文字符
+      if ((x + CH_CHAR_WIDTH) > LCD_X_LENGTH) {
+        x = 0;
+        y += CH_CHAR_HEIGHT;
+      }
+      if ((y + CH_CHAR_HEIGHT) > LCD_Y_LENGTH) {
+        y = 0;
+      }
+      LCD_DisplayChar_CH(x, y, *(uint16_t *)str);
+      x += CH_CHAR_WIDTH;
+      str += 2;
+    }
+  }
+}

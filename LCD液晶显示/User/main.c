@@ -37,6 +37,10 @@ void LCD_Test2()
   LCD_DisplayChar_EN(120, 160, 'a');
   LCD_DisplayString_EN(100, 300, "hello, world! This is a long string Test! This is a long string Test!");
   LCD_DisplayStringLine_EN(LINE(3), "This should be the third line.");
+  LCD_DisplayChar_CH(30, 64, *(uint16_t *)"啊");
+  LCD_DisplayString_CH(200, 64, "这是中文测试！");
+  LCD_SetFgColor(RGB888_2_RGB565(147, 63, 13));
+  LCD_DisplayString(100, 96, "这li是yi中文ce测试(This is English）");
 }
 
 int main(void)

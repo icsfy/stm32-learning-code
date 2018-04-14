@@ -1,4 +1,10 @@
-#include "fonts.h"
+#include "fonts/fonts.h"
+
+#ifdef GBKCODE_FLASH
+#include "spi/bsp_spi_flash.h"
+#else
+//#include "ff.h"
+#endif
 
 /*
  * 常用ASCII表，偏移量32，大小:16（高度）* 8 （宽度）
@@ -986,3 +992,21 @@ sFONT Font24x32 = {
   24, /* Width */
   32, /* Height */
 };
+
+#ifdef GBKCODE_FLASH
+void GetGBKCodeFromEXFlash(uint8_t *buff, uint16_t ch)
+{
+  uint8_t high, low;
+  static uint8_t everRead = 0;
+  uint32_t pos;
+  if (!everRead) {
+    SPI_Flash_Init();
+    everRead = 1;
+  }
+  high = ch >> 8;
+  low = ch & 0xff;
+  pos = ((high - 0xa1) * 94 + low - 0xa1) * CH_CHAR_WIDTH * CH_CHAR_HEIGHT / 8;
+  Flash_Read_Data(buff, GBKCODE_START_ADDR + pos, CH_CHAR_WIDTH * CH_CHAR_HEIGHT / 8);
+}
+#endif
+

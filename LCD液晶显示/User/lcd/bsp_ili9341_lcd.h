@@ -143,5 +143,8 @@ void LCD_DrawCircle(uint16_t x, uint16_t y, uint16_t r, uint8_t fill);
 void LCD_DisplayChar_EN(uint16_t x, uint16_t y, const char c);
 void LCD_DisplayString_EN(uint16_t x, uint16_t y, const char *pStr);
 void LCD_DisplayStringLine_EN(uint16_t line, const char *pStr);
+void LCD_DisplayChar_CH(uint16_t x, uint16_t y, uint16_t ch);
+void LCD_DisplayString_CH(uint8_t x, uint8_t y, const char *str);
+void LCD_DisplayString(uint16_t x, uint16_t y, const char *str);
 
 #endif /* __BSP_ILI9341_LCD_H */
