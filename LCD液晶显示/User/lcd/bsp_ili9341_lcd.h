@@ -2,7 +2,7 @@
 #define __BSP_ILI9341_LCD_H
 
 #include "stm32f10x.h"
-#include <stdio.h>
+#include "fonts/fonts.h"
 
 // 复位引脚
 #define LCD_RST_GPIO_CLK          RCC_APB2Periph_GPIOE
@@ -101,8 +101,8 @@
 
 #define LCD_BANK_NORSRAMx         FSMC_Bank1_NORSRAM1
 
-#define LCD_CMD_ADDR              0x60000000
-#define LCD_DATA_ADDR             0x60020000
+#define LCD_CMD_ADDR              0x60000000    // 命令操作地址
+#define LCD_DATA_ADDR             0x60020000    // 数据操作地址
 
 #define DEBUG_DELAY()
 
@@ -110,9 +110,9 @@
 #define CMD_SetCoordinateY        0x2B       //设置Y坐标
 #define CMD_SetPixel              0x2C       //填充像素
 
-#define RGB888_2_RGB565(R,G,B)    (uint16_t)(((R & 0xF8) << 8) | \
-                                             ((G & 0xFC) << 3) | \
-                                             (B >> 3))
+#define RGB888_2_RGB565(R,G,B)    (uint16_t)((((R) & 0xF8) << 8) | \
+                                             (((G) & 0xFC) << 3) | \
+                                             ((B) >> 3))
 enum LCD_COLOR {
   BLACK   = 0x0000,   // 黑
   WHITE   = 0xFFFF,   // 白
@@ -133,10 +133,15 @@ uint16_t LCD_ReadPixelFormat(void);
 uint16_t LCD_GetPointPixel(uint16_t x, uint16_t y);
 void LCD_SetBgColor(uint16_t bgColor);
 void LCD_SetFgColor(uint16_t fgColor);
+void LCD_SetFont(sFONT *fonts);
+sFONT *LCD_GetFont(void);
 void LCD_SetColors(uint16_t fgColor, uint16_t bgColor);
 void LCD_GetColors(uint16_t *fgColor, uint16_t *bgColor);
 void LCD_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2);
 void LCD_DrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t fill);
 void LCD_DrawCircle(uint16_t x, uint16_t y, uint16_t r, uint8_t fill);
+void LCD_DisplayChar_EN(uint16_t x, uint16_t y, const char c);
+void LCD_DisplayString_EN(uint16_t x, uint16_t y, const char *pStr);
+void LCD_DisplayStringLine_EN(uint16_t line, const char *pStr);
 
 #endif /* __BSP_ILI9341_LCD_H */

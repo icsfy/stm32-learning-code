@@ -2,6 +2,9 @@
 
 static uint16_t LCD_FG_COLOR = BLACK;   // 前景色
 static uint16_t LCD_BG_COLOR = WHITE;   // 背景色
+static sFONT *LCD_CurrentFonts = &Font8x16;  // 英文字体
+
+uint16_t LCD_X_LENGTH, LCD_Y_LENGTH;  // X和Y方向像素宽度
 
 static void LCD_GPIO_Config(void)
 {
@@ -317,7 +320,6 @@ static void LCD_OpenWindow(uint16_t x, uint16_t y, uint16_t width, uint16_t heig
 
 void LCD_GramScan(uint8_t option)
 {
-  uint16_t LCD_X_LENGTH, LCD_Y_LENGTH;
   //参数检查，只可输入0-7
   if (option > 7) return;
   
@@ -537,6 +539,7 @@ void LCD_Init()
   LCD_GramScan(6);
 }
 
+/* RGB565返回0x05 */
 uint16_t LCD_ReadPixelFormat(void)
 {
   LCD_Write_Cmd(0x0C);
@@ -544,13 +547,14 @@ uint16_t LCD_ReadPixelFormat(void)
   return LCD_Read_Data();
 }
 
+/* 清屏 */
 void LCD_Clear(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 {
   LCD_OpenWindow(x, y, width, height);
   LCD_Write_Cmd(CMD_SetPixel);
-  while (width--) {
-    while (height--) {
-      LCD_Write_Data(LCD_BG_COLOR);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+        LCD_Write_Data(LCD_BG_COLOR);
     }
   }
 }
@@ -566,12 +570,14 @@ static uint16_t LCD_ReadPixelData(void)
   return (R | G >> 5 | B >> 11);
 }
 
+/* 获取像素点颜色 */
 uint16_t LCD_GetPointPixel(uint16_t x, uint16_t y)
 {
   LCD_SetCursor(x, y);
   return LCD_ReadPixelData();
 }
 
+/* 画直线 */
 void LCD_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
   int8_t incX = 0, incY = 0;
@@ -604,24 +610,82 @@ void LCD_DrawLine(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
   }
 }
 
+/* 设置背景色 */
 void LCD_SetBgColor(uint16_t bgColor)
 {
   LCD_BG_COLOR = bgColor;
 }
 
+/* 设置前景色 */
 void LCD_SetFgColor(uint16_t fgColor)
 {
   LCD_FG_COLOR = fgColor;
 }
 
+/* 设置前景色和背景色 */
 void LCD_SetColors(uint16_t fgColor, uint16_t bgColor)
 {
   LCD_FG_COLOR = fgColor;
   LCD_BG_COLOR = bgColor;
 }
 
+/* 获取前景色和背景色 */
 void LCD_GetColors(uint16_t *fgColor, uint16_t *bgColor)
 {
   *fgColor = LCD_FG_COLOR;
   *bgColor = LCD_BG_COLOR;
+}
+
+/* 设置字体 */
+void LCD_SetFont(sFONT *fonts)
+{
+  LCD_CurrentFonts = fonts;
+}
+
+/* 获取字体 */
+sFONT *LCD_GetFont(void)
+{
+  return LCD_CurrentFonts;
+}
+
+/* 在(x, y)坐标处显示字符c */
+void LCD_DisplayChar_EN(uint16_t x, uint16_t y, const char c)
+{
+  uint8_t byteCount, bitCount, fontLength;
+  const uint8_t *pfont;
+  fontLength = (LCD_CurrentFonts->Width*LCD_CurrentFonts->Height)/8;
+  pfont = &LCD_CurrentFonts->table[(c - ' ') * fontLength];
+  LCD_OpenWindow(x, y, LCD_CurrentFonts->Width, LCD_CurrentFonts->Height);
+  LCD_Write_Cmd(CMD_SetPixel);
+  for (byteCount = 0; byteCount < fontLength; byteCount++) {
+    for (bitCount = 0; bitCount < 8; bitCount++) {
+      if (pfont[byteCount] & (0x80 >> bitCount))
+        LCD_Write_Data(LCD_FG_COLOR);
+      else
+        LCD_Write_Data(LCD_BG_COLOR);
+    }
+  }
+}
+
+/* 从坐标(x, y)处开始显示字符串, 超出屏幕会自动换行 */
+void LCD_DisplayString_EN(uint16_t x, uint16_t y, const char *pStr)
+{
+  while(*pStr != '\0') {
+    if ((x + LCD_CurrentFonts->Width) > LCD_X_LENGTH) {
+      x = 0;
+      y += LCD_CurrentFonts->Height;
+    }
+    if ((y + LCD_CurrentFonts->Height) > LCD_Y_LENGTH) {
+      y = 0;
+    }
+    LCD_DisplayChar_EN(x, y, *pStr);
+    pStr++;
+    x += LCD_CurrentFonts->Width;
+  }
+}
+
+/* 在第n行显示字符串, line: LINE(n) */
+void LCD_DisplayStringLine_EN(uint16_t line, const char *pStr)
+{
+  LCD_DisplayString_EN(0, line, pStr);
 }

@@ -401,6 +401,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\stm32f10x_it.c</FilePath>
             </File>
+            <File>
+              <FileName>fonts.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\fonts\fonts.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

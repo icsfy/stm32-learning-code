@@ -31,6 +31,14 @@ void LCD_Test1()
   LCD_Clear(20, 20, 40, 40);
 }
 
+void LCD_Test2()
+{
+  LCD_SetColors(WHITE, BLACK);
+  LCD_DisplayChar_EN(120, 160, 'a');
+  LCD_DisplayString_EN(100, 300, "hello, world! This is a long string Test! This is a long string Test!");
+  LCD_DisplayStringLine_EN(LINE(3), "This should be the third line.");
+}
+
 int main(void)
 {
   USARTx_Init();
@@ -38,6 +46,7 @@ int main(void)
   printf("\n---LCD TEST---\n");
   printf("\nRead Display Pixel Format: 0x%x\n", LCD_ReadPixelFormat());
   LCD_Test1();
+  LCD_Test2();
   while(1) {
   }
 }
