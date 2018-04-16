@@ -127,7 +127,11 @@ enum LCD_COLOR {
   GRAY    = 0x8410,   // »Ò
 };
 
+extern uint8_t LCD_SCAN_MODE;
+extern uint16_t LCD_X_LENGTH, LCD_Y_LENGTH;
+
 void LCD_Init(void);
+void LCD_GramScan(uint8_t option);
 void LCD_Clear(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 uint16_t LCD_ReadPixelFormat(void);
 uint16_t LCD_GetPointPixel(uint16_t x, uint16_t y);

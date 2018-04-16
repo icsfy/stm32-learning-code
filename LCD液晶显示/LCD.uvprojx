@@ -411,6 +411,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\spi\bsp_spi_flash.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_xpt2046_lcd.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\lcd\bsp_xpt2046_lcd.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

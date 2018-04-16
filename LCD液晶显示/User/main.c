@@ -1,6 +1,14 @@
 #include "stm32f10x.h"
 #include "usart/bsp_usart.h"
 #include "lcd/bsp_ili9341_lcd.h"
+#include "lcd/bsp_xpt2046_lcd.h"
+#include <string.h>
+
+void softDelay(int count)
+{
+  int n;
+  for (int i = 0; i < count; ++i) n += i;
+}
 
 void LCD_Test1()
 {
@@ -43,14 +51,58 @@ void LCD_Test2()
   LCD_DisplayString(100, 96, "这li是yi中文ce测试(This is English）");
 }
 
+void LCD_Test3()
+{
+  softDelay(0xffffff);
+  while (XPT2046_Touch_Calibrate(LCD_SCAN_MODE) == ERROR) {
+    XPT2046_ERROR("Calibration Error!");
+  } {
+    XPT2046_INFO("Calibration Success!");
+  }
+  LCD_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+  char *str = "Touch to continue";
+  LCD_DisplayString_EN((LCD_X_LENGTH - strlen(str) * LCD_GetFont()->Width) / 2, LCD_Y_LENGTH / 2, str);
+  while (1) {
+    XPT2046_TouchEvenHandler();
+  }
+}
+
+void Touch_Trace(XPT2046_Coordinate *touch, uint8_t sta)
+{
+  char buff[32];
+  static uint8_t cleared = 0;
+  if (sta == 1) {
+    if (cleared == 0) {
+      LCD_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+      cleared = 1;
+    }
+    sprintf(buff, "Touch Down: x=%d, y=%d", touch->x, touch->y);
+    LCD_DisplayStringLine_EN(LINE(0), buff);
+    LCD_Clear(touch->pre_x, 0, 1, LCD_Y_LENGTH);
+    LCD_Clear(0, touch->pre_y, LCD_X_LENGTH, 1);
+    LCD_DisplayStringLine_EN(LINE(0), buff);
+    LCD_DrawLine(touch->x, 0, touch->x, LCD_Y_LENGTH);
+    LCD_DrawLine(0, touch->y, LCD_X_LENGTH, touch->y);
+  } else {
+    sprintf(buff, "Touch Up  : x=%d, y=%d", touch->x, touch->y);
+    LCD_Clear(0, 0, LCD_X_LENGTH, LCD_Y_LENGTH);
+    LCD_DisplayStringLine_EN(LINE(0), buff);
+    LCD_DrawLine(touch->x, 0, touch->x, LCD_Y_LENGTH);
+    LCD_DrawLine(0, touch->y, LCD_X_LENGTH, touch->y);
+    cleared = 0;
+  }
+}
+
 int main(void)
 {
   USARTx_Init();
   LCD_Init();
+  XPT2046_Init();
   printf("\n---LCD TEST---\n");
   printf("\nRead Display Pixel Format: 0x%x\n", LCD_ReadPixelFormat());
   LCD_Test1();
   LCD_Test2();
+  LCD_Test3();
   while(1) {
   }
 }

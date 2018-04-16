@@ -6,6 +6,9 @@ static sFONT *LCD_CurrentFonts = &Font8x16;  // 英文字体
 
 uint16_t LCD_X_LENGTH, LCD_Y_LENGTH;  // X和Y方向像素宽度
 
+// 液晶屏扫描模式 参数可选值为0-7
+uint8_t LCD_SCAN_MODE = 6;
+
 static void LCD_GPIO_Config(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct;
@@ -535,8 +538,8 @@ void LCD_Init()
   LCD_Reset();
   LCD_REG_Config();
   
-  //设置默认扫描方向，其中 6 模式为大部分液晶例程的默认显示方向  
-  LCD_GramScan(6);
+  //设置默认扫描方向
+  LCD_GramScan(LCD_SCAN_MODE);
 }
 
 /* RGB565返回0x05 */
